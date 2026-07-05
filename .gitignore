@@ -1,0 +1,29 @@
+# 环境配置（含敏感凭据）
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# 运行时数据
+data/
+uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日志
+*.log
+
+# 前端构建产物
+frontend/node_modules/
+frontend/dist/
+
+# AI 辅助工具本地记忆
+.workbuddy/
