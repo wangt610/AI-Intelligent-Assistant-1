@@ -47,16 +47,16 @@ await conn.execute("SELECT * FROM sessions")
 Our design philosophy is: **create a single global connection when the application starts, reuse it throughout the lifecycle, and release it on shutdown.** This is far more efficient than creating/closing connections for every operation, and avoids the complexity of connection management.
 
 ```python
-# database/__init__.py（核心结构）
+# database/__init__.py (core structure)
 
-_db: aiosqlite.Connection | None = None  # 全局单例
+_db: aiosqlite.Connection | None = None  # global singleton
 
 def _db_path() -> str:
-    """从配置中读取数据库文件路径"""
+    """Read database file path from config"""
     return get_settings().db_path
 
 async def init_db() -> None:
-    """应用启动时调用一次，初始化连接和表结构"""
+    """Called once at app startup, initialize connection and table structure"""
     global _db
     db_path = _db_path()
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
@@ -73,16 +73,16 @@ async def init_db() -> None:
     await _db.commit()
 
 async def close_db() -> None:
-    """应用关闭时调用"""
+    """Called on app shutdown"""
     global _db
     if _db:
         await _db.close()
         _db = None
 
 async def get_db() -> aiosqlite.Connection:
-    """获取全局连接（运行时调用）"""
+    """Get global connection, create if not exists"""
     if _db is None:
-        raise RuntimeError("数据库未初始化，请先调用 init_db()")
+        raise RuntimeError("Database not initialized, call init_db() first")
     return _db
 ```
 
@@ -115,7 +115,7 @@ Each table's DDL and migration logic is encapsulated in its own module (`databas
 **5. Re-exporting Keeps the API Clean**
 
 ```python
-# database/__init__.py 底部
+# database/__init__.py lower level
 from database.sessions import (
     create_session, get_sessions, get_session,
     rename_session, delete_session, search_sessions,
@@ -181,7 +181,7 @@ Each conversation is a session, similar to a "chat" in ChatGPT. Core fields:
 ```sql
 CREATE TABLE IF NOT EXISTS sessions (
     id          TEXT PRIMARY KEY,
-    title       TEXT NOT NULL DEFAULT '新对话',
+    title       TEXT NOT NULL DEFAULT 'New conversation',
     created_at  TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     updated_at  TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
@@ -252,7 +252,7 @@ Using sessions as an example, the typical CRUD pattern:
 
 ```python
 # Create
-async def create_session(db: aiosqlite.Connection, title: str = "新对话") -> str:
+async def create_session(db: aiosqlite.Connection, title: str = "New conversation") -> str:
     session_id = str(uuid.uuid4())
     await db.execute(
         "INSERT INTO sessions (id, title) VALUES (?, ?)",

@@ -1,4 +1,4 @@
-# Chapter 10 — Web Search Integration
+# Chapter 10: Web Search Integration
 
 > **Prerequisite**: Chapter 8 (RAG, understanding context enrichment mechanisms)  
 > **Focus**: When the local knowledge base is insufficient, enabling the AI to intelligently decide and search the web.
@@ -90,12 +90,12 @@ async def analyze_search_intent(query, history):
                 context_parts.append(msg.get("content", ""))
 
     prompt = (
-        "判断是否需要联网搜索。\n\n"
-        f"历史对话：{' | '.join(reversed(context_parts))}\n\n"
-        f"问题：{query}\n\n"
-        "仅输出：\n"
-        "SEARCH:关键词（需搜索）\n"
-        "NO（不需要）"
+        "Determine if web search is needed.\n\n"
+        f"Chat history: {' | '.join(reversed(context_parts))}\n\n"
+        f"Query: {query}\n\n"
+        "Response format:\n"
+        "SEARCH:keywords separated by spaces\n"
+        "NO:not needed"
     )
 
     content = await asyncio.wait_for(
@@ -183,23 +183,23 @@ def _format_web_section(web_context):
     lines = []
     for i, r in enumerate(web_context):
         title = r.get("title", "") or r["source_file"]
-        lines.append(f"[联网搜索] [{i+1}] {title}\n\n{r['text']}")
-    return "<联网搜索>\n" + "\n\n".join(lines) + "\n</联网搜索>"
+        lines.append(f"[Search Result {i+1}] {title}\n\n{r['text']}")
+    return "<search_results>\n" + "\n\n".join(lines) + "\n</search_results>"
 
 def _pick_instruction(has_rag, has_web):
     if has_rag and has_web:
         return (
-            "请参考以上资料回答。对于参考资料中的内容请严格依据并标注来源；"
-            "对于联网搜索结果请结合你的知识回答，不要照搬原文。"
-            "引用联网搜索时用 [N] 标注来源编号（如 [1][2]）。"
-            "若资料不足请直接说不知道。"
+            "Please answer based on the following reference materials. For specific information present in the references, elaborate in detail and cite the source."
+            "If the reference materials lack relevant information, answer based on your knowledge, do not copy the original text verbatim."
+            "Mark source numbers at the end of sentences like [N], e.g. [1][2]."
+            "If the references are insufficient, just say you don't know."
         )
     if has_rag:
-        return "请严格依据以上参考资料回答，必要时标注来源。若资料不足请直接说不知道。"
+        return "Please answer based on the following references, cite sources when necessary. If references are insufficient, just say you don't know."
     return (
-        "以下是联网搜索结果，每项以 [N] 编号。请结合你的知识回答，"
-        "引用时用 [N] 标注来源（如 [1][2]）。"
-        "不要直接照搬搜索内容。"
+        "Please answer based on search results, cite sources with [N] notation. Answer according to your knowledge."
+        "Mark source numbers at the end of sentences like [N], e.g. [1][2]."
+        "Do not copy the search results verbatim."
     )
 ```
 

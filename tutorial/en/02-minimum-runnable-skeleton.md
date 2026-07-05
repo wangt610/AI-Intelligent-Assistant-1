@@ -98,7 +98,7 @@ The three-stage structure of `lifespan` is a "sandwich":
 flowchart TD
     Start((Start))
 
-    subgraph 启动["Startup Phase (startup)"]
+    subgraph startup["Startup Phase (startup)"]
         S1[Initialize logging system]
         S1 --> S2[Load runtime configuration]
         S2 --> S3[Read system prompt file]
@@ -111,22 +111,22 @@ flowchart TD
         S8 -.- SN
     end
 
-    subgraph 运行["Running Phase (running)"]
+    subgraph running["Running Phase (running)"]
         R0[yield]
         RN["Application runs here\nreceives and processes all HTTP requests"]
         R0 -.- RN
     end
 
-    subgraph 关闭["Shutdown Phase (shutdown)"]
+    subgraph shutdown["Shutdown Phase (shutdown)"]
         E1[Stop model warmup manager]
         E1 --> E2[Close database connection]
         E2 --> E3[Log shutdown]
     end
 
-    Start --> 启动
-    启动 --> 运行
-    运行 --> 关闭
-    关闭 --> Stop((End))
+    Start --> startup
+    startup --> running
+    running --> shutdown
+    shutdown --> Stop((End))
 ```
 
 Corresponding to the actual code in the project (`main.py:70-107`):
@@ -415,7 +415,7 @@ Let's trace a complete request — from the user sending a message to receiving 
 
 ```mermaid
 sequenceDiagram
-    actor 用户 as User
+    actor User
     participant CORS as CORS Middleware
     participant RID as RequestID Middleware
     participant TM as Timing Middleware
@@ -426,7 +426,7 @@ sequenceDiagram
     participant Engine as Stream Engine
     participant Ollama as Ollama
 
-    用户->>CORS: POST /api/chat\n{ session_id, message }
+    User->>CORS: POST /api/chat\n{ session_id, message }
     CORS->>RID: Set CORS headers
     RID->>TM: Inject trace_id, write log context
     TM->>SH: Start timing
@@ -443,7 +443,7 @@ sequenceDiagram
     Ollama->>Engine: Return token by token
 
     Engine->>Handler: SSE event stream\n(data: {"text":"Hello"})
-    Handler->>用户: StreamingResponse\n(Content-Type: text/event-stream)
+    Handler->>User: StreamingResponse\n(Content-Type: text/event-stream)
 
     Note right of Handler: Response returns in reverse order\nthrough middleware:\nBodyLimit → SecurityHeaders →\nTiming (record duration) → RequestID →\nCORS
 ```

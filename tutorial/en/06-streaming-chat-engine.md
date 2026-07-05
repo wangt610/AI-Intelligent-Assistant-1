@@ -58,10 +58,10 @@ sequenceDiagram
         SE->>SE: build_messages() assemble prompt
         SE->>MP: provider.stream(messages)
         loop Token stream generation
-            MP-->>SE: {"type": "content", "text": "你"}
-            MP-->>SE: {"type": "content", "text": "好"}
-            SE-->>FE: event: token<br/>data: {"token":"你"}
-            SE-->>FE: event: token<br/>data: {"token":"好"}
+            MP-->>SE: {"type": "content", "text": "Hello"}
+            MP-->>SE: {"type": "content", "text": "! How"}
+            SE-->>FE: event: token<br/>data: {"token":"Hello"}
+            SE-->>FE: event: token<br/>data: {"token":"! How"}
             SE->>SE: 5s heartbeat check
             SE-->>FE: event: heartbeat<br/>data: {"ts":...}
         end
@@ -72,7 +72,7 @@ sequenceDiagram
         SE->>SE: Save AI reply to DB
         SE->>SE: Auto-generate title for first message
         SE->>SE: Check if history compression is needed
-        SE-->>FE: event: done<br/>data: {"full_text":"你好..."}
+            SE-->>FE: event: done<br/>data: {"full_text":"Hello! How can I..."}
     end
     
     FE->>User: Display complete reply
@@ -149,7 +149,7 @@ def _index_message(session_id, message_id, role, content):
             from services.memory import index_message
             asyncio.create_task(index_message(session_id, message_id, role, content))
     except Exception:
-        logger.warning("语义记忆索引失败")
+        logger.warning("Semantic memory indexing failed")
 ```
 
 > **Design Principle**: Non-critical path operations use `asyncio.create_task` to execute asynchronously without blocking the main flow. If memory indexing fails, the conversation can still proceed; but if the message isn't saved, the conversation cannot continue.
@@ -173,7 +173,7 @@ session_summary = (session or {}).get("summary") or None
 This is the most sophisticated design in the entire engine. The traditional approach is: RAG retrieval first → wait for results → then memory retrieval → wait for results → then determine if search is needed → then perform search. But these are all **independent operations** with no data dependencies between them!
 
 ```python
-# 四个任务同时启动，互不等待！
+        # Start four tasks concurrently without waiting!
 rag_task = asyncio.create_task(
     _do_rag_search(ctx.session_id, ctx.user_message, ctx.rag_mode, history, ctx.current_file)
 )
@@ -206,19 +206,19 @@ Only wait for RAG, memory retrieval, and intent analysis. The speculative search
 if intent_task:
     intent_result = intent_task.result()
     if intent_result and spec_web_task:
-        # 需要搜索 → 等待投机任务（最多 3 秒）
+        # Search needed → wait for speculative task (max 3s)
         done, _ = await asyncio.wait([spec_web_task], timeout=3.0)
         if done:
             web_context = spec_web_task.result()
         else:
-            # 投机未完成，如果意图改写了查询，用新查询重搜
+            # Speculation incomplete, if intent rewrote query, search with new query
             if intent_result != ctx.user_message:
                 spec_web_task.cancel()
                 web_context = await do_web_search(intent_result)
             else:
                 web_context = await spec_web_task
     elif spec_web_task:
-        # 不需要搜索 → 取消投机任务
+        # No search needed → cancel speculative task
         spec_web_task.cancel()
 ```
 
@@ -330,15 +330,15 @@ When the number of uncompressed messages reaches 80% of the budget limit, a back
 
 ```python
 except asyncio.CancelledError:
-    logger.warning("对话流被中断 session=%s partial=%d", ctx.session_id[:8], len(full_text))
+    logger.warning("Chat stream interrupted session=%s partial=%d", ctx.session_id[:8], len(full_text))
     if full_text:
-        # 有部分内容 → 保存为 interrupted 状态
+        # Has partial content → save as interrupted status
         await save_message(db, ctx.session_id, "assistant",
-            full_text + "\n\n[回复被中断]", status="interrupted")
+            full_text + "\n\n[Response interrupted]", status="interrupted")
     elif user_msg_id is not None:
-        # 没有任何回复 → 连用户消息也删除，保持界面干净
+        # No response → delete user message too, keep UI clean
         await delete_message(db, user_msg_id)
-    return  # 不抛出异常
+    return  # do not raise exception
 ```
 
 When the user clicks the "Stop Generation" button on the frontend, `AbortController.abort()` cancels the HTTP request, triggering FastAPI to inject `CancelledError` into `sse_chat_stream`. The engine's handling strategy:
@@ -354,7 +354,7 @@ except Exception as e:
         try:
             await delete_message(db, user_msg_id)
         except Exception:
-            pass  # 删除失败不掩盖原始错误
+            pass  # deletion failure should not mask original error
     yield f"event: error\ndata: {json.dumps({'detail': str(e)})}\n\n"
 ```
 
@@ -366,22 +366,22 @@ Below is an example of the SSE event stream that the client actually receives:
 
 ```
 event: thinking
-data: {"text": "让我分析一下这个问题..."}
+data: {"text": "Let me analyze this question..."}
 
 event: token
-data: {"token": "你"}
+data: {"token": "Hello"}
 
 event: token
-data: {"token": "好"}
+data: {"token": "! How"}
 
 event: heartbeat
 data: {"ts": 1720000001.5}
 
 event: token
-data: {"token": "！"}
+data: {"token": "!"}
 
 event: done
-data: {"full_text": "你好！", "full_thinking": "让我分析一下这个问题...", "session_title": null}
+data: {"full_text": "Hello! How can I assist you today?", "full_thinking": "Let me analyze this question...", "session_title": null}
 ```
 
 Complete event type summary:
@@ -460,7 +460,7 @@ const handlers = {
         set({ streaming: false });
         break;
       case 'error':
-        bufferedUpdate(`错误: ${JSON.parse(data).detail}`);
+        bufferedUpdate(`Error: ${JSON.parse(data).detail}`);
         set({ streaming: false });
         break;
     }

@@ -1,4 +1,4 @@
-# Chapter 8 RAG Retrieval-Augmented Generation
+# Chapter 8: RAG Retrieval-Augmented Generation
 
 > **Prerequisite**: Chapters 1–7 (Project Setup → Frontend & Backend Skeleton)
 > **Focus of this chapter**: Turn documents into searchable knowledge, enabling AI to answer using your private data.
