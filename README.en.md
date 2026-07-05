@@ -151,7 +151,7 @@ ollama pull bge-m3
 ### 3. Clone & Install
 
 ```bash
-git clone <your-repo-url> && cd "AI Intelligent Assistant"
+git clone https://github.com/HelloWorld-Open/AI-Intelligent-Assistant.git && cd "AI Intelligent Assistant"
 pip install -r requirements.txt
 ```
 
