@@ -259,4 +259,4 @@ PORT=8001
 
 ## 📜 License
 
-MIT — 自由使用、修改、分发。
+MIT

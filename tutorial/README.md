@@ -277,7 +277,7 @@ graph TB
     end
 
     subgraph 存储层["存储层"]
-        db[(SQLite (aiosqlite))]
+        db[("SQLite (aiosqlite)")]
         chroma[(ChromaDB)]
         fs[/文件系统/]
     end
