@@ -1,5 +1,13 @@
 # AI 智能助手
 
+<p align="right">
+  <a href="./README.en.md">English</a> | <strong>中文</strong>
+</p>
+
+<p align="center">
+  <img src="./assets/Logo.png" width="250" alt="AI 智能助手">
+</p>
+
 <p align="center">
   <strong>一个运行在本地设备上的全栈 AI 对话助手</strong>
 </p>

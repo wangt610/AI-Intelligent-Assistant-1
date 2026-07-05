@@ -1,3 +1,5 @@
+> **English version available**: [tutorial/en/README.md](./en/README.md) — 14 chapters fully translated
+
 # 从零构建AI智能助手 — 基于FastAPI + Ollama + ChromaDB的完整实战教程
 
 > **数据完全本地化** · **模型完全本地运行** · **零外部API依赖即可使用**
@@ -230,84 +232,6 @@ AI Intelligent Assistant/
 - 检查 **环境是否正确安装**（Ollama 是否运行？模型是否已拉取？）
 - 查看应用的 **控制台日志**——每条日志都带有请求ID，方便定位问题
 - **回退到上一章的最小可用状态**，确认是哪一步引入的问题
-
-## 架构全景
-
-在深入学习每一章之前，先建立系统的整体认知：
-
-```mermaid
-graph TB
-    subgraph 客户端["客户端"]
-        FE[React 前端]
-        API_c[curl / API 调用]
-    end
-
-    subgraph FastAPI["FastAPI 应用 (端口 8001)"]
-        subgraph 中间件层["中间件层"]
-            cm[CORS]
-            ri_mid[RequestID]
-            tm_mid[Timing]
-            se_mid[Security]
-            bl_mid[BodyLimit]
-        end
-
-        subgraph 路由层["路由层 (routers/)"]
-            rc[chat.py]
-            rh[history.py]
-            ri_route[index_routes.py]
-            rm[models.py]
-            rs[settings.py]
-            rhealth[health.py]
-        end
-
-        subgraph 业务逻辑层["业务逻辑层 (services/)"]
-            engine[stream_engine]
-            re[rag_engine]
-            sm[memory]
-            ws[web_search]
-            pb[prompt_builder]
-        end
-
-        subgraph 适配器层["适配器层 (providers/)"]
-            op[OllamaProvider]
-            oip[OpenAIProvider]
-            ep[EmbeddingProvider]
-            sp[SearchProvider]
-        end
-    end
-
-    subgraph 存储层["存储层"]
-        db[("SQLite (aiosqlite)")]
-        chroma[(ChromaDB)]
-        fs[/文件系统/]
-    end
-
-    subgraph 外部服务["外部服务"]
-        od[Ollama 守护进程]
-        oai[OpenAI 兼容 API]
-        ddg[DuckDuckGo / Tavily]
-    end
-
-    FE --> rc
-    API_c --> rc
-    rc --> engine
-    rh --> engine
-    ri_route --> re
-    engine --> pb
-    engine --> sm
-    engine --> ws
-    engine --> op
-    re --> ep
-    re --> sp
-    op --> od
-    oip --> oai
-    sp --> ddg
-    db --> engine
-    db --> rh
-    chroma --> re
-    chroma --> sm
-    fs --> ri_route
-```
 
 ## 项目亮点速览
 
