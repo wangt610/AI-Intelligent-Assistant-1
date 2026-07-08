@@ -15,6 +15,7 @@ import chromadb
 from chromadb.config import Settings as ChromaSettings
 
 from config import get_settings
+from runtime_config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +136,7 @@ class ChromaAdapter(VectorStore):
         dists = results.get("distances", [[]])[0]
 
         hits = []
-        threshold = get_settings().rag_score_threshold
+        threshold = get_config("rag_score_threshold")
         for doc, meta, dist in zip(docs, metas, dists):
             score = 1.0 - dist
             if score >= threshold:
