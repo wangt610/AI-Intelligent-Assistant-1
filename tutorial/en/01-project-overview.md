@@ -274,7 +274,11 @@ Contents of `requirements.txt`:
 
 ```
 fastapi>=0.115.0          # Web framework
+starlette>=0.40.0         # Starlette ASGI framework
 uvicorn[standard]>=0.34.0 # ASGI server
+pydantic>=2.0.0           # Data validation
+httpx>=0.28.0             # HTTP client
+numpy>=1.26.0             # Numerical computing
 ollama>=0.4.0             # Ollama Python client
 python-multipart>=0.0.9   # File upload parsing
 pydantic-settings>=2.0.0  # Config management
@@ -399,7 +403,7 @@ You are a professional AI Intelligent Assistant running on the user's local devi
 Before moving to the next chapter, complete the following tasks to consolidate your understanding:
 
 1. **Modify the system prompt**: Add a new behavior rule in `prompts/default_system.md`, restart and observe the AI's behavioral changes
-2. **Try a different model**: Change `ollama_model` in `config.py` to `qwen3.5:1.5b` (first run `ollama pull qwen3.5:1.5b`), compare response quality
+2. **Try a different model**: Change `ollama_model` in `config.py` to `qwen3.5:2b` (first run `ollama pull qwen3.5:2b`), compare response quality
 3. **View API docs**: After starting the app, visit `http://127.0.0.1:8001/docs` to browse FastAPI's auto-generated Swagger documentation
 4. **Explore the directory structure**: Use `ls` or file explorer to view the project directory, find each file against the structure diagram in the README
 
