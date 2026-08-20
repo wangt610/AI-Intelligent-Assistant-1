@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # Ollama
     ollama_host: str = "http://localhost:11434"
-    ollama_model: str = "qwen3.5:latest"
+    ollama_model: str = "qwen3.5:2b"
     ollama_timeout: int = 300
     ollama_keep_alive: str = "-1"
     ollama_num_ctx: int = 20480
